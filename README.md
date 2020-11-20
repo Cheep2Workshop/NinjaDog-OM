@@ -26,3 +26,13 @@ docker push [repository-url]/nd-matchfunction:[version]
 kubectl create ns nd-mo-components
 kubectl apply -f ./nd-om.yaml
 ```
+
+
+#修改部署參數
+```
+env:
+  PROJECT_ID: cheep2workshop
+  GKE_CLUSTER: my-open-match-cluster 	        #目標Cluster
+  GKE_ZONE: asia-east1-a 	   
+  IMAGE_REPO: "asia.gcr.io/cheep2workshop"
+```
