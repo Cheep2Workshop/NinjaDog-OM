@@ -1,0 +1,57 @@
+name: Build and Deploy to GKE
+
+on:
+  push:
+    branches: [master]
+
+env:
+  PROJECT_ID: cheep2workshop
+  GKE_CLUSTER: my-open-match-cluster 	   
+  GKE_ZONE: asia-east1-a 	   
+  IMAGE_REPO: "asia.gcr.io/cheep2workshop"
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Setup gcloud CLI
+    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        service_account_key: ${{ secrets.GKE_SA_KEY }}
+        project_id: cheep2workshop
+        export_default_credentials: true
+
+    # Configure Docker to use the gcloud command-line tool as a credential
+    # helper for authentication
+    - run: |-
+        gcloud --quiet auth configure-docker
+
+    # Get the GKE credentials so we can deploy to the cluster
+    - run: |-
+        gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
+
+    # Build the Docker image
+    - name: Build Publish
+      run: |-
+        VERSION="g."$GITHUB_RUN_ID
+        echo "$VERSION"
+        IMAGE_REPO="asia.gcr.io/cheep2workshop"
+        docker build -t ${IMAGE_REPO}/nd-director:${VERSION} ./nd-director
+        docker build -t ${IMAGE_REPO}/nd-frontend:${VERSION} ./nd-frontend
+        docker build -t ${IMAGE_REPO}/nd-matchfunction:${VERSION} ./nd-matchfunction
+        docker push ${IMAGE_REPO}/nd-director:${VERSION}
+        docker push ${IMAGE_REPO}/nd-frontend:${VERSION} 
+        docker push ${IMAGE_REPO}/nd-matchfunction:${VERSION} 
+        # MAC sed -i '' "s/_VERSION/$VERSION/" ./nd-om.yaml
+        sed -i "s/_VERSION/$VERSION/" ./nd-om.yaml
+        
+    # Deploy the Docker image to the GKE cluster
+    - name: Deploy
+      run: |-
+        kubectl apply -f ./nd-om.yaml
+
