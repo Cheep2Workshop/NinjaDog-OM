@@ -4,7 +4,6 @@ Open-match components of NinjaDog
 
 # QuickStart
 **0.前置需求** <br/>
-<br/>
 Open-match安裝: [Open-match core Installation](https://openmatch.dev/site/docs/installation/) <br/>
 Agones安裝: [Agones core Installation](https://agones.dev/site/docs/installation/) <br/>
 
