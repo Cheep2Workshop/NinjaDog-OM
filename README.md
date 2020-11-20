@@ -28,7 +28,7 @@ kubectl apply -f ./nd-om.yaml
 ```
 
 
-#修改部署參數
+# 修改部署參數
 ```
 env:
   PROJECT_ID: cheep2workshop
