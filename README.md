@@ -29,6 +29,7 @@ kubectl apply -f ./nd-om.yaml
 
 
 # 修改部署參數
+修改.github/workflows/google.yml檔案
 ```
 env:
   PROJECT_ID: cheep2workshop
