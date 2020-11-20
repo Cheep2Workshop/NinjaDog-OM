@@ -28,7 +28,7 @@ kubectl apply -f ./nd-om.yaml
 ```
 
 
-# 修改部署參數
+# D
 修改.github/workflows/google.yml檔案，更改部署的目標Cluster
 ```
 env:
