@@ -3,6 +3,11 @@ Open-match components of NinjaDog
 
 
 # QuickStart
+**前置需求**
+Open-match安裝: [Open-match core Installation](https://openmatch.dev/site/docs/installation/)
+Agones安裝: [Agones core Installation](https://agones.dev/site/docs/installation/)
+
+
 **1.建立所有元件 image**
 ```
 docker build -t [repsitory-url]/nd-director:[version] ./nd-director
