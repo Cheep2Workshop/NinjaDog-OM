@@ -47,11 +47,11 @@ jobs:
         docker push ${IMAGE_REPO}/nd-director:${VERSION}
         docker push ${IMAGE_REPO}/nd-frontend:${VERSION} 
         docker push ${IMAGE_REPO}/nd-matchfunction:${VERSION} 
-
+        # MAC sed -i '' "s/_VERSION/$VERSION/" ./nd-om.yaml
+        sed -i "s/_VERSION/$VERSION/" ./nd-om.yaml
+        
     # Deploy the Docker image to the GKE cluster
     - name: Deploy
       run: |-
-        # MAC sed -i '' "s/_VERSION/$VERSION/" ./nd-om.yaml
-        sed -i "s/_VERSION/$VERSION/" ./nd-om.yaml
         kubectl apply -f ./nd-om.yaml
 
