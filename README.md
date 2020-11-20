@@ -28,8 +28,8 @@ kubectl apply -f ./nd-om.yaml
 ```
 
 
-# Deployment
-修改.github/workflows/google.yml檔案，更改部署的目標Cluster
+# Auto-Deployment
+修改.github/workflows/google.yml檔案，更改自動部署的目標Cluster
 ```
 env:
   PROJECT_ID: cheep2workshop
