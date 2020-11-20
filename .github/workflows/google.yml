@@ -2,7 +2,7 @@ name: Build and Deploy to GKE
 
 on:
   push:
-    types: [master]
+    branches: [master]
 
 env:
   PROJECT_ID: cheep2workshop
