@@ -7,8 +7,7 @@ on:
 env:
   PROJECT_ID: cheep2workshop
   GKE_CLUSTER: my-open-match-cluster 	   
-  GKE_ZONE: uasia-east1-a 	   
-  DEPLOYMENT_NAME: gke-test
+  GKE_ZONE: asia-east1-a 	   
   IMAGE_REPO: "asia.gcr.io/cheep2workshop"
 
 jobs:
@@ -54,4 +53,4 @@ jobs:
       run: |-
         sed -i '' "s/_VERSION/$VERSION/" ./nd-om.yaml
         kubectl apply -f ./nd-om.yaml
-        kubectl rollout status deployment/$DEPLOYMENT_NAME
+
