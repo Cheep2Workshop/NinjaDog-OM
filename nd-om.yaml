@@ -24,7 +24,7 @@ metadata:
 spec:
   containers:
   - name: nd-director
-    image: asia.gcr.io/cheep2workshop/nd-director
+    image: asia.gcr.io/cheep2workshop/nd-director:_VERSION
     imagePullPolicy: Always
   hostname: nd-director
 ---
@@ -36,7 +36,7 @@ metadata:
 spec:
   containers:
   - name: nd-frontend
-    image: asia.gcr.io/cheep2workshop/nd-frontend
+    image: asia.gcr.io/cheep2workshop/nd-frontend:_VERSION
     imagePullPolicy: Always
   hostname: nd-frontend
 ---
@@ -51,7 +51,7 @@ metadata:
 spec:
   containers:
   - name: nd-matchfunction
-    image: asia.gcr.io/cheep2workshop/nd-matchfunction
+    image: asia.gcr.io/cheep2workshop/nd-matchfunction:_VERSION
     imagePullPolicy: Always
     ports:
     - name: grpc
