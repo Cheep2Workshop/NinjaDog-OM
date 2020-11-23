@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -29,7 +30,8 @@ const (
 	// The endpoint for the Open Match Frontend service.
 	omFrontendEndpoint = "om-frontend.open-match.svc.cluster.local:50504"
 	// Number of tickets created per iteration
-	ticketsPerIter = 20
+	ticketsPerIter   = 5
+	maxWaitingTicket = 30
 )
 
 func main() {
@@ -38,11 +40,22 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to Open Match, got %v", err)
 	}
+	totalTicketCount := 0
 
 	defer conn.Close()
 	fe := pb.NewFrontendServiceClient(conn)
 	for range time.Tick(time.Second * 2) {
 		for i := 0; i <= ticketsPerIter; i++ {
+			// limit ticket creating
+			if totalTicketCount >= maxWaitingTicket {
+				fmt.Println("Failed to create ticket because ticket quota is full.")
+				fmt.Println("Waiting for ticket deleting ...")
+				for totalTicketCount >= maxWaitingTicket {
+					time.Sleep(1000)
+					continue
+				}
+			}
+
 			req := &pb.CreateTicketRequest{
 				Ticket: makeTicket(),
 			}
@@ -52,16 +65,17 @@ func main() {
 				log.Printf("Failed to Create Ticket, got %s", err.Error())
 				continue
 			}
+			totalTicketCount++
 
 			log.Println("Ticket created successfully, id:", resp.Id)
-			go deleteOnAssign(fe, resp)
+			go deleteOnAssign(fe, resp, &totalTicketCount)
 		}
 	}
 }
 
 // deleteOnAssign fetches the Ticket state periodically and deletes the Ticket
 // once it has an assignment.
-func deleteOnAssign(fe pb.FrontendServiceClient, t *pb.Ticket) {
+func deleteOnAssign(fe pb.FrontendServiceClient, t *pb.Ticket, count *int) {
 	for {
 		got, err := fe.GetTicket(context.Background(), &pb.GetTicketRequest{TicketId: t.GetId()})
 		if err != nil {
@@ -79,5 +93,10 @@ func deleteOnAssign(fe pb.FrontendServiceClient, t *pb.Ticket) {
 	_, err := fe.DeleteTicket(context.Background(), &pb.DeleteTicketRequest{TicketId: t.GetId()})
 	if err != nil {
 		log.Fatalf("Failed to Delete Ticket %v, got %s", t.GetId(), err.Error())
+	} else {
+		*count--
 	}
+
+	fmt.Printf("Delete ticket %s", t.GetId())
+
 }

@@ -31,5 +31,8 @@ func createAgonesClient() *versioned.Clientset {
 	}
 
 	fmt.Println("Succeed to connect to Agones")
+
+	testClientGo()
+
 	return agonesClient
 }

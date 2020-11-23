@@ -49,24 +49,31 @@ func fetch(be pb.BackendServiceClient, agonesClient *versioned.Clientset) ([]*pb
 
 	stream, err := be.FetchMatches(context.Background(), req)
 	if err != nil {
-		log.Println()
+		fmt.Printf("Director: fail to get response stream from backend.FetchMatches call, desc: %s\n", err.Error())
 		return nil, err
 	}
 
 	var matches []*pb.Match
+	count := 0
 	for {
 		resp, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-
-		if err != nil {
-			return nil, err
-		}
-
+		// assign match
 		match := resp.GetMatch()
-		assign(be, agonesClient, match)
+		assignErr := assign(be, agonesClient, match)
+		if assignErr != nil {
+			fmt.Printf("Assign game server failed, got %s", assignErr.Error())
+			fmt.Println()
+		}
 		matches = append(matches, match)
+		if err == io.EOF {
+			fmt.Println("Resp EOF")
+			break
+		} else {
+			fmt.Printf("Get resp : %d", count)
+			fmt.Println()
+			count++
+		}
+
 	}
 	return matches, nil
 }

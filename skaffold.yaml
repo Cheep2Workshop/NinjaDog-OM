@@ -1,0 +1,18 @@
+apiVersion: skaffold/v2beta9
+kind: Config
+metadata:
+  name: ninjadog-om
+build:
+  artifacts:
+  - image: asia.gcr.io/cheep2workshop/nd-director
+    context: nd-director
+  - image: asia.gcr.io/cheep2workshop/nd-frontend
+    context: nd-frontend
+  - image: asia.gcr.io/cheep2workshop/nd-matchfunction
+    context: nd-matchfunction
+deploy:
+  kubectl:
+    manifests:
+    - nd-om.yaml
+    #- nd-frontend/frontend.yaml
+    #- nd-matchfunction/matchfunction.yaml

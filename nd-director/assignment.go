@@ -52,11 +52,22 @@ func assign(be pb.BackendServiceClient, agonesClient *versioned.Clientset, match
 		fmt.Printf("Failed to allocate game server.\n")
 	}
 
-	if _, err = be.AssignTickets(context.Background(), createOMAssignTicketRequest(match, gsa)); err != nil {
+	assignTicketReq := createOMAssignTicketRequest(match, gsa)
+	for _, assign := range assignTicketReq.GetAssignments() {
+		connection := assign.GetAssignment().GetConnection()
+		fmt.Printf("Assignment ticket req connection:%s", connection)
+	}
+
+	if resp, err := be.AssignTickets(context.Background(), assignTicketReq); err != nil {
 		// Corner case where we allocated a game server for players who left the queue after some waiting time.
 		// Note that we may still leak some game servers when tickets got assigned but players left the queue before game frontend announced the assignments.
 		if err = agonesClient.AgonesV1().GameServers("default").Delete(gsa.Status.GameServerName, &metav1.DeleteOptions{}); err != nil {
 			return err
+		}
+
+		if len(resp.GetFailures()) > 0 {
+			fmt.Printf("Assignment failed : %d", len(resp.GetFailures()))
+			fmt.Println()
 		}
 	}
 	return nil
