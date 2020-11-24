@@ -7,5 +7,6 @@ require (
 	google.golang.org/grpc v1.25.0
 	k8s.io/apimachinery v0.16.15
 	k8s.io/client-go v0.16.15
+	k8s.io/klog v1.0.0
 	open-match.dev/open-match v1.0.0
 )

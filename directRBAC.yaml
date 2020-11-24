@@ -1,0 +1,7 @@
+#https://jimmysong.io/kubernetes-handbook/concepts/serviceaccount.html
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: director
+  namespace: nd-om-components
+automountServiceAccountToken: false
