@@ -48,7 +48,7 @@ func main() {
 		for i := 0; i <= ticketsPerIter; i++ {
 			// limit ticket creating
 			if totalTicketCount >= maxWaitingTicket {
-				fmt.Println("Failed to create ticket because ticket quota is full.")
+				fmt.Println("Failed to create ticket because quota is full.")
 				fmt.Println("Waiting for ticket deleting ...")
 				for totalTicketCount >= maxWaitingTicket {
 					time.Sleep(1000)
@@ -85,6 +85,8 @@ func deleteOnAssign(fe pb.FrontendServiceClient, t *pb.Ticket, count *int) {
 		if got.GetAssignment() != nil {
 			log.Printf("Ticket %v got assignment %v", got.GetId(), got.GetAssignment())
 			break
+		} else {
+			//fmt.Println("Assignment is null")
 		}
 
 		time.Sleep(time.Second * 1)

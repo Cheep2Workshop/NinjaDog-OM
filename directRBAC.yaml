@@ -1,7 +1,33 @@
 #https://jimmysong.io/kubernetes-handbook/concepts/serviceaccount.html
-apiVersion: v1
-kind: ServiceAccount
+# apiVersion: v1
+# kind: ServiceAccount
+# metadata:
+  # name: nd-director-account
+  # namespace: default
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: director
-  namespace: nd-om-components
-automountServiceAccountToken: false
+  name: nd-director-role
+  namespace: default
+rules:
+- apiGroups: ["allocation.agones.dev"] # "" indicates the core API group
+  resources: ["gameserverallocations"]
+  verbs: ["create"]
+- apiGroups: ["agones.dev"]
+  resources: ["gameservers", "gameserversets"]
+  verbs: ["create", "list", "delete", "watch"]
+---
+# apiversion: rbac.authorization.k8s.io/v1
+# kind: clusterrolebinding
+# metadata:
+  # name: default
+  # namespace: default
+# subjects:
+# - kind: group
+  # name: default
+  # apigroup: rbac.authorization.k8s.io
+# roleref:
+  # kind: clusterrole
+  # name: nd-director-role
+  # apigroup: rbac.authorization.k8s.io

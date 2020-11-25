@@ -20,31 +20,20 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: nd-director
-  namespace: agones-system
+  namespace: default
 spec:
-  volumes:
-    - name: google-cloud-key
-      secret:
-        secretName: app-key
   containers:
   - name: nd-director
     image: asia.gcr.io/cheep2workshop/nd-director:_VERSION
-    imagePullPolicy: Always
-    volumeMounts:
-    - name: google-cloud-key
-      mountPath: /var/secrets/google
-    env:
-    - name: GOOGLE_APPLICATION_CREDENTIALS
-      value: /var/secrets/google/key.json
-  serviceAccountName: agones-allocator
-  automountServiceAccountToken: false
+    imagePullPolicy: Always    
+  #serviceAccountName: nd-director-account
   hostname: nd-director
 ---
 apiVersion: v1
 kind: Pod
 metadata:
   name: nd-frontend
-  namespace: agones-system
+  namespace: default
 spec:
   containers:
   - name: nd-frontend
@@ -56,7 +45,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: nd-matchfunction
-  namespace: agones-system
+  namespace: default
   labels:
     app: nd
     component: matchfunction
@@ -73,7 +62,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: nd-matchfunction
-  namespace: agones-system
+  namespace: default
   labels:
     app: nd
     component: matchfunction

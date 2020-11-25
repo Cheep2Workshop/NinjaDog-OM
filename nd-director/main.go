@@ -14,7 +14,7 @@ import (
 const (
 	omBackendEndpoint = "om-backend.open-match.svc.cluster.local:50505"
 
-	functionHostName       = "nd-matchfunction.nd-om-components.svc.cluster.local"
+	functionHostName       = "nd-matchfunction.default.svc.cluster.local"
 	functionPort     int32 = 50502
 )
 
@@ -59,18 +59,20 @@ func fetch(be pb.BackendServiceClient, agonesClient *versioned.Clientset) ([]*pb
 		resp, err := stream.Recv()
 		// assign match
 		match := resp.GetMatch()
+		matches = append(matches, match)
+		fmt.Printf("Got match (Id:%s, Func:%s) - %d Tickets", match.GetMatchId(), match.GetMatchFunction(), len(match.GetTickets()))
 		assignErr := assign(be, agonesClient, match)
 		if assignErr != nil {
 			fmt.Printf("Assign game server failed, got %s", assignErr.Error())
 			fmt.Println()
 		}
-		matches = append(matches, match)
 		if err == io.EOF {
 			fmt.Println("Resp EOF")
 			break
 		} else {
 			fmt.Printf("Get resp : %d", count)
 			fmt.Println()
+
 			count++
 		}
 

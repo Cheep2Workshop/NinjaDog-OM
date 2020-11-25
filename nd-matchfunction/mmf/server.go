@@ -59,4 +59,5 @@ func Start(queryServiceAddr string, serverPort int) {
 	if err != nil {
 		log.Fatalf("gRPC serve failed, got %s", err.Error())
 	}
+	println("mmf started")
 }
