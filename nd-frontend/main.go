@@ -31,31 +31,22 @@ const (
 	omFrontendEndpoint = "om-frontend.open-match.svc.cluster.local:50504"
 	// Number of tickets created per iteration
 	ticketsPerIter   = 5
-	maxWaitingTicket = 30
+	maxWaitingTicket = 20
 )
 
 func main() {
+	fmt.Println("Start nd-frontend")
 	// Connect to Open Match Frontend.
 	conn, err := grpc.Dial(omFrontendEndpoint, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to connect to Open Match, got %v", err)
 	}
-	totalTicketCount := 0
-
 	defer conn.Close()
-	fe := pb.NewFrontendServiceClient(conn)
-	for range time.Tick(time.Second * 2) {
-		for i := 0; i <= ticketsPerIter; i++ {
-			// limit ticket creating
-			if totalTicketCount >= maxWaitingTicket {
-				fmt.Println("Failed to create ticket because quota is full.")
-				fmt.Println("Waiting for ticket deleting ...")
-				for totalTicketCount >= maxWaitingTicket {
-					time.Sleep(1000)
-					continue
-				}
-			}
 
+	totalTicketCount := 0
+	fe := pb.NewFrontendServiceClient(conn)
+	for range time.Tick(time.Second * 5) {
+		for totalTicketCount < maxWaitingTicket {
 			req := &pb.CreateTicketRequest{
 				Ticket: makeTicket(),
 			}
@@ -76,7 +67,7 @@ func main() {
 // deleteOnAssign fetches the Ticket state periodically and deletes the Ticket
 // once it has an assignment.
 func deleteOnAssign(fe pb.FrontendServiceClient, t *pb.Ticket, count *int) {
-	for {
+	for range time.Tick(time.Second * 5) {
 		got, err := fe.GetTicket(context.Background(), &pb.GetTicketRequest{TicketId: t.GetId()})
 		if err != nil {
 			log.Fatalf("Failed to Get Ticket %v, got %s", t.GetId(), err.Error())
@@ -85,20 +76,15 @@ func deleteOnAssign(fe pb.FrontendServiceClient, t *pb.Ticket, count *int) {
 		if got.GetAssignment() != nil {
 			log.Printf("Ticket %v got assignment %v", got.GetId(), got.GetAssignment())
 			break
-		} else {
-			//fmt.Println("Assignment is null")
 		}
-
-		time.Sleep(time.Second * 1)
 	}
 
 	_, err := fe.DeleteTicket(context.Background(), &pb.DeleteTicketRequest{TicketId: t.GetId()})
 	if err != nil {
 		log.Fatalf("Failed to Delete Ticket %v, got %s", t.GetId(), err.Error())
-	} else {
-		*count--
 	}
 
-	fmt.Printf("Delete ticket %s", t.GetId())
-
+	*count--
+	fmt.Printf("Delete ticket %s, remain %d tickets", t.GetId(), *count)
+	fmt.Println()
 }

@@ -19,10 +19,7 @@ func createOMAssignTicketRequest(match *pb.Match, gsa *allocationv1.GameServerAl
 	}
 
 	fmt.Printf("Gameserver (%s) : %s", gsa.Status.GameServerName, gsa.Status.Address)
-	if len(gsa.Status.Ports) <= 0 {
-
-		return nil
-	}
+	fmt.Println()
 
 	return &pb.AssignTicketsRequest{
 		Assignments: []*pb.AssignmentGroup{
@@ -54,36 +51,33 @@ func assign(be pb.BackendServiceClient, agonesClient *versioned.Clientset, match
 	gsa, err := agonesClient.AllocationV1().GameServerAllocations("default").Create(createAgonesGameServerAllocation())
 	if err != nil {
 		return err
-
 	}
-	// if gsa.Status.State != allocationv1.GameServerAllocationAllocated {
-	// 	fmt.Printf("Failed to allocate game server.\n")
-	// }
+
+	// no game server can be allocated
+	if gsa.Status.State != allocationv1.GameServerAllocationAllocated {
+		return errors.New("failed to allocate game server")
+	}
 
 	assignTicketReq := createOMAssignTicketRequest(match, gsa)
-	if assignTicketReq != nil {
-		for _, assign := range assignTicketReq.GetAssignments() {
-			connection := assign.GetAssignment().GetConnection()
-			fmt.Printf("Assignment ticket req connection:%s", connection)
+	// display all of connection assinged
+	for _, assign := range assignTicketReq.GetAssignments() {
+		connection := assign.GetAssignment().GetConnection()
+		fmt.Printf("Assignment ticket req connection:%s", connection)
+		fmt.Println()
+	}
+
+	resp, err := be.AssignTickets(context.Background(), assignTicketReq)
+	if err != nil {
+		// Corner case where we allocated a game server for players who left the queue after some waiting time.
+		// Note that we may still leak some game servers when tickets got assigned but players left the queue before game frontend announced the assignments.
+		if err = agonesClient.AgonesV1().GameServers("default").Delete(gsa.Status.GameServerName, &metav1.DeleteOptions{}); err != nil {
+			return err
+		}
+
+		if len(resp.GetFailures()) > 0 {
+			fmt.Printf("Assignment failed : %d", len(resp.GetFailures()))
 			fmt.Println()
 		}
-
-		fmt.Println("Assigned ticket")
-		resp, err := be.AssignTickets(context.Background(), assignTicketReq)
-		if err != nil {
-			// Corner case where we allocated a game server for players who left the queue after some waiting time.
-			// Note that we may still leak some game servers when tickets got assigned but players left the queue before game frontend announced the assignments.
-			if err = agonesClient.AgonesV1().GameServers("default").Delete(gsa.Status.GameServerName, &metav1.DeleteOptions{}); err != nil {
-				return err
-			}
-
-			if len(resp.GetFailures()) > 0 {
-				fmt.Printf("Assignment failed : %d", len(resp.GetFailures()))
-				fmt.Println()
-			}
-		}
-		return nil
-	} else {
-		return errors.New("No port of allocated server")
 	}
+	return nil
 }

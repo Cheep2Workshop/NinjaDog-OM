@@ -18,19 +18,17 @@ import (
 	// Uncomment if following the tutorial
 	// "math/rand"
 
-	"math/rand"
-
 	"open-match.dev/open-match/pkg/pb"
 )
 
 // Ticket generates a Ticket with data using the package configuration.
 func makeTicket() *pb.Ticket {
 	// Add logic to populate Ticket data and generate Ticket.
-	modes := []string{"mode.demo", "mode.ctf", "mode.battleroyale"}
+	mode := "mode.demo"
 	ticket := &pb.Ticket{
 		SearchFields: &pb.SearchFields{
 			Tags: []string{
-				modes[rand.Intn(len(modes))],
+				mode,
 			},
 		},
 	}

@@ -47,7 +47,7 @@ metadata:
   name: nd-matchfunction
   namespace: default
   labels:
-    app: nd
+    app: nd-matchfunction
     component: matchfunction
 spec:
   containers:
@@ -64,11 +64,11 @@ metadata:
   name: nd-matchfunction
   namespace: default
   labels:
-    app: nd
+    app: nd-matchfunction
     component: matchfunction
 spec:
   selector:
-    app: nd
+    app: nd-matchfunction
     component: matchfunction
   clusterIP: None
   type: ClusterIP

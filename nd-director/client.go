@@ -25,20 +25,22 @@ func createOMBackendClient() (pb.BackendServiceClient, func() error) {
 }
 
 // https://github.com/kubernetes/client-go/tree/master/examples/in-cluster-client-configuration
-func createAgonesClient() *versioned.Clientset {
+func createAgonesClient() (*versioned.Clientset, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		log.Fatalf("Failed to connect agones service, got %s", err.Error())
+		return nil, fmt.Errorf("Failed to connect agones service, got %s", err.Error())
+		// log.Fatalf("Failed to connect agones service, got %s", err.Error())
 	}
 
 	agonesClient, err := versioned.NewForConfig(config)
 	if err != nil {
-		log.Fatalf("Failed to new for config, go %s", err.Error())
+		return nil, fmt.Errorf("Failed to new for config, go %s", err.Error())
+		// log.Fatalf("Failed to new for config, go %s", err.Error())
 	}
 
 	fmt.Println("Succeed to connect to Agones")
 
-	return agonesClient
+	return agonesClient, nil
 }
 
 // https://gist.github.com/ks888/0a0e0fbf4694d7955999a6f59aa2766d

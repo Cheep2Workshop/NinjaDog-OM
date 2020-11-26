@@ -68,7 +68,6 @@ func makeMatches(p *pb.MatchProfile, poolTickets map[string][]*pb.Ticket) ([]*pb
 	// Add logic to parse the pool tickets and generate matches here.
 	var matches []*pb.Match
 	count := 0
-	fmt.Println("make match")
 	for {
 		insufficientTickets := false
 		matchTickets := []*pb.Ticket{}

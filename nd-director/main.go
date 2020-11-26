@@ -19,9 +19,11 @@ const (
 )
 
 func main() {
-	for {
-		if err := run(); err != nil {
-			fmt.Println(err.Error())
+	// execute fecth procedure every 1 second
+	for range time.Tick(5 * time.Second) {
+		err := run()
+		if err != nil {
+			log.Fatal(err.Error())
 		}
 	}
 }
@@ -30,18 +32,16 @@ func run() error {
 	bc, closer := createOMBackendClient()
 	defer closer()
 
-	agonesClient := createAgonesClient()
-
-	//p := generateMatchProfile()
-	matches, err := fetch(bc, agonesClient)
+	agonesClient, err := createAgonesClient()
 	if err != nil {
 		return err
 	}
-	log.Printf("Generated %v matches", len(matches))
 
-	time.Sleep(time.Second * 5)
+	matches, err := fetch(bc, agonesClient)
+	if len(matches) > 0 {
+		log.Printf("Generated %v matches", len(matches))
+	}
 	return nil
-
 }
 
 func fetch(be pb.BackendServiceClient, agonesClient *versioned.Clientset) ([]*pb.Match, error) {
@@ -50,6 +50,7 @@ func fetch(be pb.BackendServiceClient, agonesClient *versioned.Clientset) ([]*pb
 	stream, err := be.FetchMatches(context.Background(), req)
 	if err != nil {
 		fmt.Printf("Director: fail to get response stream from backend.FetchMatches call, desc: %s\n", err.Error())
+		fmt.Println()
 		return nil, err
 	}
 
@@ -57,25 +58,26 @@ func fetch(be pb.BackendServiceClient, agonesClient *versioned.Clientset) ([]*pb
 	count := 0
 	for {
 		resp, err := stream.Recv()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return nil, err
+		}
+
 		// assign match
 		match := resp.GetMatch()
 		matches = append(matches, match)
+		if match == nil {
+			fmt.Println("match is null")
+		}
 		fmt.Printf("Got match (Id:%s, Func:%s) - %d Tickets", match.GetMatchId(), match.GetMatchFunction(), len(match.GetTickets()))
+		fmt.Println()
 		assignErr := assign(be, agonesClient, match)
 		if assignErr != nil {
 			fmt.Printf("Assign game server failed, got %s", assignErr.Error())
 			fmt.Println()
 		}
-		if err == io.EOF {
-			fmt.Println("Resp EOF")
-			break
-		} else {
-			fmt.Printf("Get resp : %d", count)
-			fmt.Println()
-
-			count++
-		}
-
+		count++
 	}
 	return matches, nil
 }

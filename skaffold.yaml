@@ -14,5 +14,3 @@ deploy:
   kubectl:
     manifests:
     - nd-om.yaml
-    #- nd-frontend/frontend.yaml
-    #- nd-matchfunction/matchfunction.yaml
