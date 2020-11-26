@@ -41,11 +41,15 @@ env:
 ****
 # TroubleShooting
 **1.ServiceAccount** <br/>
-當遇到ServiceAccount的權限問題時，使用directRBAC.yaml建立ClusterRole
+當遇到ServiceAccount的權限問題時，例
+```
+User "system:serviceaccount:default:default" cannot create services in the namespace "default"
+```
+首先使用directRBAC.yaml建立ClusterRole
 ```
 kubectl apply -f directRBAC.yaml
 ```
-綁定ClusterRole至[namespace]:[serviceAccount] (預設為default:default)
+其次產生ClusterRoleBinding並綁定ClusterRole至ServiceAccount (預設為default:default)
 ```
 kubectl create clusterrolebinding [bindingName] --serviceAccount=default:default --clusterrole=nd-director-role
 ```
