@@ -40,3 +40,12 @@ env:
 
 ****
 # TroubleShooting
+**1.ServiceAccount**
+當遇到ServiceAccount的權限問題時，使用directRBAC.yaml建立ClusterRole
+```
+kubectl apply -f directRBAC.yaml
+```
+綁定ClusterRole至[namespace]:[serviceAccount] (預設為default:default)
+```
+kubectl create clusterrolebinding [bindingName] --serviceAccount=default:default --clusterrole=nd-director-role
+```
