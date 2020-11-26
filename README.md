@@ -27,7 +27,7 @@ kubectl create ns nd-mo-components
 kubectl apply -f ./nd-om.yaml
 ```
 
-
+****
 # Auto-Deployment
 修改.github/workflows/google.yml檔案，更改自動部署的目標Cluster
 ```
