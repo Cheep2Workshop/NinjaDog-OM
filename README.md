@@ -32,15 +32,15 @@ kubectl apply -f ./nd-om.yaml
 NinjaDog-OM總共有三個元件分別執行不同的功能，分別是nd-frontend、nd-matchfunction、nd-director <br/>
 
 **1.nd-frontend** <br/>
-與客戶端的接口
+與客戶端的接口。 <br/>
 接收客戶端排隊請求，產生Ticket(用於辨識客戶端)，並發送Ticket至Open-match frontend；最後等待回傳的遊戲伺服器資訊，將相對應的Ticket從隊列中刪除。
 
 **2.nd-matchfunction** <br/>
-排隊主邏輯
+排隊主邏輯。 <br/>
 從Open-match query取得目前排隊的玩家Ticket，根據自訂的排隊邏輯(依Rank, Mode, etc...)將玩家群分成多個集合(Match)，並回傳給Open-match backend。
 
 **3.nd-director** <br/>
-Open-match與Agones對接的元件
+Open-match與Agones對接的元件。 <br/>
 從Open-match backend取得來自nd-matchfunction的結果(Match)，向Agones-Allocator申請分配遊戲伺服器(Allocation)，分析遊戲伺服器資訊(Assignment含IP和Port)並回傳給Open-match backend。
 
 ****
