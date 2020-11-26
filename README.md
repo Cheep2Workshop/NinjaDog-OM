@@ -37,3 +37,6 @@ env:
   GKE_ZONE: asia-east1-a 	   
   IMAGE_REPO: "asia.gcr.io/cheep2workshop"
 ```
+
+****
+# TroubleShooting
