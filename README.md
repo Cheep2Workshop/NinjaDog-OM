@@ -40,7 +40,7 @@ env:
 
 ****
 # TroubleShooting
-**1.ServiceAccount**<br
+**1.ServiceAccount** <br/>
 當遇到ServiceAccount的權限問題時，使用directRBAC.yaml建立ClusterRole
 ```
 kubectl apply -f directRBAC.yaml
