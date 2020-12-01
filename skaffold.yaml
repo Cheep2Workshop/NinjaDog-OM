@@ -6,10 +6,10 @@ build:
   artifacts:
   - image: asia.gcr.io/cheep2workshop/nd-director
     context: nd-director
-  - image: asia.gcr.io/cheep2workshop/nd-frontend
-    context: nd-frontend
   - image: asia.gcr.io/cheep2workshop/nd-matchfunction
     context: nd-matchfunction
+  - image: asia.gcr.io/cheep2workshop/nd-lobby
+    context: nd-lobby
 deploy:
   kubectl:
     manifests:

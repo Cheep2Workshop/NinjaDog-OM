@@ -32,14 +32,14 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: nd-frontend
+  name: nd-lobby
   namespace: default
 spec:
   containers:
-  - name: nd-frontend
-    image: asia.gcr.io/cheep2workshop/nd-frontend:_VERSION
+  - name: nd-lobby
+    image: asia.gcr.io/cheep2workshop/nd-lobby:_VERSION
     imagePullPolicy: Always
-  hostname: nd-frontend
+  hostname: nd-lobby
 ---
 apiVersion: v1
 kind: Pod
@@ -77,3 +77,17 @@ spec:
     protocol: TCP
     port: 50502
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nd-lobby-service
+spec:
+  selector:
+    app: nd-lobby
+  type: NodePort
+  ports:
+  - port: 8080
+    nodePort: 32001
+    protocol: TCP
+    targetPort: 8080
+
