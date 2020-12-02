@@ -8,12 +8,13 @@ import (
 func main() {
 	fmt.Println("Start lobby server")
 	http.HandleFunc("/startmatchmake", startMatchMake)
-	// http.HandleFunc("/getmatchmakeprocess", getMatchMakeProcess)
-	// http.HandleFunc("/cancelmatchmake", cancelMatchMake)
+	http.HandleFunc("/getmatchmake", getMatchMakeProcess)
+	http.HandleFunc("/cancelmatchmake", cancelMatchMake)
 
-	// go refreshTickets()
+	// refresh and delete tickets periodly
+	go refreshTickets()
 
-	// http.HandleFunc("/hello1", hello1)
+	http.HandleFunc("/hello1", hello1)
 
 	http.ListenAndServe(":8080", nil)
 }

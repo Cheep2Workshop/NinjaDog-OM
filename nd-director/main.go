@@ -97,7 +97,7 @@ func createOMFetchMatchesRequest() *pb.FetchMatchesRequest {
 }
 
 func generateMatchProfile() *pb.MatchProfile {
-	mode := "mode.demo"
+	mode := "mode.dev"
 	mp := &pb.MatchProfile{
 		Name: "mode_based_profile",
 		Pools: []*pb.Pool{

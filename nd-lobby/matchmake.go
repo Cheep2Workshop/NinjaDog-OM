@@ -36,11 +36,13 @@ func startMatchMake(res http.ResponseWriter, req *http.Request) {
 	r := StartMatchMakeRes{
 		TicketID: resp.Id,
 	}
-	code, err := json.Marshal(r)
+
+	err = json.NewEncoder(res).Encode(r)
+	//code, err := json.Marshal(r)
 	if err != nil {
 		log.Fatalf("Failed encode json, got %s", err.Error())
 	}
-	res.Write(code)
+	// res.Write(code)
 	log.Println("Ticket created successfully, id:", resp.Id)
 }
 
@@ -48,9 +50,7 @@ func startMatchMake(res http.ResponseWriter, req *http.Request) {
 func getMatchMakeProcess(res http.ResponseWriter, req *http.Request) {
 	// get the ticket id of player
 	var ticketID string
-	if err := json.NewDecoder(req.Body).Decode(&ticketID); err != nil {
-		req.Body.Close()
-	}
+	ticketID = req.FormValue("id")
 
 	// connect to open-match frontend
 	conn, err := grpc.Dial(omFrontendEndpoint, grpc.WithInsecure())
@@ -69,12 +69,25 @@ func getMatchMakeProcess(res http.ResponseWriter, req *http.Request) {
 	resp, err := fe.GetTicket(context.Background(), tReq)
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(res, "Faild to get ticket in pool.")
+		//fmt.Fprintf(res, "Faild to get ticket in pool.")
 		log.Printf("Failed to get ticket (%s), got %v\n", ticketID, err.Error())
-	} else if resp.Assignment == nil {
-		fmt.Fprintf(res, "Keep match making")
-	} else if resp.Assignment != nil {
-		fmt.Fprintf(res, fmt.Sprintf("Find match:%s", resp.Assignment.Connection))
+	} else {
+		var conn string
+		if resp.Assignment == nil {
+			conn = ""
+		} else {
+			conn = resp.Assignment.Connection
+		}
+		r := GetMatchMakeProcessRes{
+			Status:     0,
+			Assignment: conn,
+			ErrMsg:     "Success",
+		}
+		err = json.NewEncoder(res).Encode(r)
+		//code, err := json.Marshal(r)
+		if err != nil {
+			log.Fatalf("Failed encode json, got %s", err.Error())
+		}
 	}
 }
 
@@ -82,16 +95,23 @@ func getMatchMakeProcess(res http.ResponseWriter, req *http.Request) {
 func cancelMatchMake(res http.ResponseWriter, req *http.Request) {
 	// get the ticket id of player
 	var ticketID string
-	if err := json.NewDecoder(req.Body).Decode(&ticketID); err != nil {
-		req.Body.Close()
-	}
+	ticketID = req.FormValue("id")
 
-	msg, err := deleteTicket(ticketID)
+	_, err := deleteTicket(ticketID)
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(res, err.Error())
 	} else {
-		fmt.Fprintf(res, msg)
+		r := CancelMatchMakeRes{
+			Status: 0,
+			ErrMsg: "Success",
+		}
+		code, err := json.Marshal(r)
+		if err != nil {
+			log.Fatalf("Falied to encode json, got %s", err.Error())
+		}
+		res.Write(code)
+		log.Println("Cancel match making successfully, id:", ticketID)
 	}
 
 	// conn, err := grpc.Dial(omFrontendEndpoint, grpc.WithInsecure())
@@ -150,7 +170,21 @@ func refreshTickets() {
 	}
 }
 
+// StartMatchMakeRes is response of startmatchmake
 type StartMatchMakeRes struct {
-	TicketID string
-	ErrMsg   string
+	TicketID string `json:"ticketid,string,omitempty"`
+	ErrMsg   string `json:"errmsg,omitempty"`
+}
+
+// CancelMatchMakeRes is response of cancelmatchmake
+type CancelMatchMakeRes struct {
+	Status int32  `json:"status"`
+	ErrMsg string `json:"errmsg,omitempty"`
+}
+
+// GetMatchMakeProcessRes is response of getmatchmakeprocess
+type GetMatchMakeProcessRes struct {
+	Status     int32  `json:"status"`
+	Assignment string `json:"assignment,omitempty"`
+	ErrMsg     string `json:"errmsg,omitempty"`
 }

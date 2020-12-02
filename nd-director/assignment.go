@@ -12,6 +12,10 @@ import (
 	"open-match.dev/open-match/pkg/pb"
 )
 
+const (
+	fleetname = "nd-ugs"
+)
+
 func createOMAssignTicketRequest(match *pb.Match, gsa *allocationv1.GameServerAllocation) *pb.AssignTicketsRequest {
 	tids := []string{}
 	for _, t := range match.GetTickets() {
@@ -40,7 +44,7 @@ func createAgonesGameServerAllocation() *allocationv1.GameServerAllocation {
 			Required: metav1.LabelSelector{
 				// match label = agones.GroupName + "/fleet"
 				// may use other label such as : private, battle, etc ...
-				MatchLabels: map[string]string{agonesv1.FleetNameLabel: "simple-udp"},
+				MatchLabels: map[string]string{agonesv1.FleetNameLabel: fleetname},
 			},
 		},
 	}

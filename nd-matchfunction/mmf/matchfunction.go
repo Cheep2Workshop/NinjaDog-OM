@@ -72,6 +72,8 @@ func makeMatches(p *pb.MatchProfile, poolTickets map[string][]*pb.Ticket) ([]*pb
 		insufficientTickets := false
 		matchTickets := []*pb.Ticket{}
 		for pool, tickets := range poolTickets {
+			fmt.Printf("Pool[%s] tickets count:%d", pool, len(tickets))
+			fmt.Println()
 			if len(tickets) < ticketsPerPoolPerMatch {
 				// This pool is completely drained out. Stop creating matches.
 				insufficientTickets = true

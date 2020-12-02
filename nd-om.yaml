@@ -34,11 +34,16 @@ kind: Pod
 metadata:
   name: nd-lobby
   namespace: default
+  labels:
+    app: nd-lobby
 spec:
   containers:
   - name: nd-lobby
     image: asia.gcr.io/cheep2workshop/nd-lobby:_VERSION
     imagePullPolicy: Always
+    ports:
+    - name: http
+      containerPort: 8080
   hostname: nd-lobby
 ---
 apiVersion: v1
@@ -80,14 +85,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: nd-lobby-service
+  name: nd-lobby
+  namespace: default
 spec:
   selector:
     app: nd-lobby
-  type: NodePort
+  type: LoadBalancer
   ports:
-  - port: 8080
-    nodePort: 32001
-    protocol: TCP
+  - protocol: TCP
+    port: 8080
     targetPort: 8080
-
