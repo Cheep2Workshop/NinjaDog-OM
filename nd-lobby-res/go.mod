@@ -1,3 +1,3 @@
-module github.com/cheep2workshop/ninjadog-om/nd-lobby-res
+module nd-lobby-res
 
 go 1.15
