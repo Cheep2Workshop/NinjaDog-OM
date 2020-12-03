@@ -31,7 +31,7 @@ const (
 	matchName = "basic-matchfunction"
 
 	// Uncomment if following the tutorial
-	ticketsPerPoolPerMatch = 4
+	ticketsPerPoolPerMatch = 1
 )
 
 // Run is this match function's implementation of the gRPC call defined in api/matchfunction.proto.

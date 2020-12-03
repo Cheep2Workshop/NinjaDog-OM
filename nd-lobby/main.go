@@ -2,11 +2,15 @@ package main
 
 import (
 	"fmt"
+	"nd-lobby/tts"
 	"net/http"
 )
 
 func main() {
 	fmt.Println("Start lobby server")
+
+	tts.InitTicketTimestamps()
+
 	http.HandleFunc("/startmatchmake", startMatchMake)
 	http.HandleFunc("/getmatchmake", getMatchMakeProcess)
 	http.HandleFunc("/cancelmatchmake", cancelMatchMake)

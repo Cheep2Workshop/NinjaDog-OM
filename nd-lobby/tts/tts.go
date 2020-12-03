@@ -1,13 +1,15 @@
 package tts
 
-import "time"
+import (
+	"time"
+)
 
 const idleTicketTolerance float64 = 10
 
 var ticketTimestamps map[string]time.Time
 
-// InitTicketTimestampes initailize ticket timestamps
-func InitTicketTimestampes() {
+// InitTicketTimestamps initailize ticket timestamps
+func InitTicketTimestamps() {
 	ticketTimestamps = make(map[string]time.Time)
 }
 
@@ -21,7 +23,8 @@ func RefreshTicketTimestamps() []string {
 	var deletedTickets []string
 	now := time.Now()
 	for ticket, timestamp := range ticketTimestamps {
-		duration := timestamp.Sub(now)
+		duration := now.Sub(timestamp)
+		//fmt.Printf("Ticket(%s) duration = %s", ticket, duration)
 		if duration.Seconds() > idleTicketTolerance {
 			deletedTickets = append(deletedTickets, ticket)
 		}

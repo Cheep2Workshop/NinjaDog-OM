@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"nd-lobby/lobbyres"
 	"nd-lobby/tts"
 	"net/http"
 	"time"
+
+	lobbyres "github.com/cheep2workshop/ninjadog-om/nd-lobby-res"
 
 	"google.golang.org/grpc"
 	"open-match.dev/open-match/pkg/pb"
@@ -20,10 +21,11 @@ const (
 
 // start match making
 func startMatchMake(res http.ResponseWriter, req *http.Request) {
-	fe, err := newClient(omFrontendEndpoint)
+	fe, conn, err := newClient(omFrontendEndpoint)
 	if err != nil {
 		log.Fatalf("Falied create frontend service client, got %s", err.Error())
 	}
+	defer conn.Close()
 
 	tReq := &pb.CreateTicketRequest{
 		Ticket: generateTicket(),
@@ -42,6 +44,7 @@ func startMatchMake(res http.ResponseWriter, req *http.Request) {
 		log.Fatalf("Failed encode json, got %s", err.Error())
 	}
 	log.Println("Ticket created successfully, id:", resp.Id)
+	tts.UpdateTicketTimestamp(resp.Id)
 }
 
 // check if ticket is still existed
@@ -50,10 +53,11 @@ func getMatchMakeProcess(res http.ResponseWriter, req *http.Request) {
 	var ticketID string
 	ticketID = req.FormValue("id")
 
-	fe, err := newClient(omFrontendEndpoint)
+	fe, conn, err := newClient(omFrontendEndpoint)
 	if err != nil {
 		log.Fatalf("Falied create frontend service client, got %s", err.Error())
 	}
+	defer conn.Close()
 
 	tReq := &pb.GetTicketRequest{
 		TicketId: ticketID,
@@ -110,10 +114,11 @@ func cancelMatchMake(res http.ResponseWriter, req *http.Request) {
 }
 
 func deleteTicket(ticketID string) (string, error) {
-	fe, err := newClient(omFrontendEndpoint)
+	fe, conn, err := newClient(omFrontendEndpoint)
 	if err != nil {
 		log.Fatalf("Falied create frontend service client, got %s", err.Error())
 	}
+	defer conn.Close()
 
 	tReq := &pb.DeleteTicketRequest{
 		TicketId: ticketID,
@@ -139,15 +144,14 @@ func refreshTickets() {
 	}
 }
 
-func newClient(endPoint string) (pb.FrontendServiceClient, error) {
+func newClient(endPoint string) (pb.FrontendServiceClient, *grpc.ClientConn, error) {
 	conn, err := grpc.Dial(endPoint, grpc.WithInsecure())
 	if err != nil {
 		// log.Fatalf("Failed to connect to Open Match, got %v", err)
 		conn.Close()
-		return nil, fmt.Errorf("Failed to connect to Open Match, got %v", err)
+		return nil, nil, fmt.Errorf("Failed to connect to Open Match, got %v", err)
 	}
-	defer conn.Close()
 
 	fe := pb.NewFrontendServiceClient(conn)
-	return fe, nil
+	return fe, conn, nil
 }

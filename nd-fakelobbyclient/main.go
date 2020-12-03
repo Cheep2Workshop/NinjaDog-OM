@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	lobbyres "github.com/cheep2workshop/ninjadog-om/nd-lobby-res"
 )
 
 func main() {
@@ -83,7 +85,7 @@ func startmatchmake(url string) {
 	}
 	fmt.Println("1")
 
-	var smmRes *StartMatchMakeRes = &StartMatchMakeRes{}
+	var smmRes *lobbyres.StartMatchMakeRes = &lobbyres.StartMatchMakeRes{}
 	// err = json.NewDecoder(resp.Body).Decode(smmRes)
 	// err = json.Unmarshal(resp.Body, &smmRes)
 	err = getJSON(*resp, smmRes)
@@ -102,7 +104,7 @@ func cancelmatchmake(u string, ticketID string) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 200 {
-		res := &CancelMatchMakeRes{}
+		res := &lobbyres.CancelMatchMakeRes{}
 		err := json.NewDecoder(resp.Body).Decode(res)
 		if err != nil {
 			log.Fatalf("Falied to decode json, got %s", err.Error())
@@ -119,7 +121,7 @@ func getmatchmakeprocess(u string, ticketID string) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 200 {
-		res := &GetMatchMakeProcessRes{}
+		res := &lobbyres.GetMatchMakeProcessRes{}
 		err := json.NewDecoder(resp.Body).Decode(res)
 		if err != nil {
 			log.Fatalf("Falied to decode json, got %s", err.Error())
@@ -128,25 +130,6 @@ func getmatchmakeprocess(u string, ticketID string) {
 	} else {
 		log.Fatalf("Recv status code:%d", resp.StatusCode)
 	}
-}
-
-// StartMatchMakeRes is response of startmatchmake
-type StartMatchMakeRes struct {
-	TicketID string `json:"ticketid,string,omitempty"`
-	ErrMsg   string `json:"errmsg,omitempty"`
-}
-
-// CancelMatchMakeRes is response of cancelmatchmake
-type CancelMatchMakeRes struct {
-	Status int32  `json:"status"`
-	ErrMsg string `json:"errmsg,omitempty"`
-}
-
-// GetMatchMakeProcessRes is response of getmatchmakeprocess
-type GetMatchMakeProcessRes struct {
-	Status     int32  `json:"status"`
-	Assignment string `json:"assignment,omitempty"`
-	ErrMsg     string `json:"errmsg,omitempty"`
 }
 
 func getJSON(r http.Response, target interface{}) error {
