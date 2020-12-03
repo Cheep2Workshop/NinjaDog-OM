@@ -18,13 +18,11 @@ const (
 
 // start match making
 func startMatchMake(res http.ResponseWriter, req *http.Request) {
-	conn, err := grpc.Dial(omFrontendEndpoint, grpc.WithInsecure())
+	fe, err := newClient(omFrontendEndpoint)
 	if err != nil {
-		log.Fatalf("Failed to connect to Open Match, got %v", err)
+		log.Fatalf("Falied create frontend service client, got %s", err.Error())
 	}
-	defer conn.Close()
 
-	fe := pb.NewFrontendServiceClient(conn)
 	tReq := &pb.CreateTicketRequest{
 		Ticket: generateTicket(),
 	}
@@ -52,15 +50,11 @@ func getMatchMakeProcess(res http.ResponseWriter, req *http.Request) {
 	var ticketID string
 	ticketID = req.FormValue("id")
 
-	// connect to open-match frontend
-	conn, err := grpc.Dial(omFrontendEndpoint, grpc.WithInsecure())
+	fe, err := newClient(omFrontendEndpoint)
 	if err != nil {
-		log.Fatalf("Failed to connect to Open Match, got %v", err)
+		log.Fatalf("Falied create frontend service client, got %s", err.Error())
 	}
-	defer conn.Close()
 
-	// create client of open-match frontend
-	fe := pb.NewFrontendServiceClient(conn)
 	tReq := &pb.GetTicketRequest{
 		TicketId: ticketID,
 	}
@@ -69,9 +63,9 @@ func getMatchMakeProcess(res http.ResponseWriter, req *http.Request) {
 	resp, err := fe.GetTicket(context.Background(), tReq)
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
-		//fmt.Fprintf(res, "Faild to get ticket in pool.")
 		log.Printf("Failed to get ticket (%s), got %v\n", ticketID, err.Error())
 	} else {
+		// generate response
 		var conn string
 		if resp.Assignment == nil {
 			conn = ""
@@ -84,10 +78,10 @@ func getMatchMakeProcess(res http.ResponseWriter, req *http.Request) {
 			ErrMsg:     "Success",
 		}
 		err = json.NewEncoder(res).Encode(r)
-		//code, err := json.Marshal(r)
 		if err != nil {
 			log.Fatalf("Failed encode json, got %s", err.Error())
 		}
+
 	}
 }
 
@@ -113,40 +107,14 @@ func cancelMatchMake(res http.ResponseWriter, req *http.Request) {
 		res.Write(code)
 		log.Println("Cancel match making successfully, id:", ticketID)
 	}
-
-	// conn, err := grpc.Dial(omFrontendEndpoint, grpc.WithInsecure())
-	// if err != nil {
-	// 	log.Fatalf("Failed to connect to Open Match, got %v", err)
-	// }
-	// defer conn.Close()
-
-	// // create client of open-match frontend
-	// fe := pb.NewFrontendServiceClient(conn)
-	// tReq := &pb.DeleteTicketRequest{
-	// 	TicketId: ticketID,
-	// }
-
-	// // create request for getting ticket from open-match
-	// _, err = fe.DeleteTicket(context.Background(), tReq)
-	// if err != nil {
-	// 	res.WriteHeader(http.StatusInternalServerError)
-	// 	fmt.Fprintf(res, "Falied to delete ticket")
-	// 	log.Fatalf("Failed to delete ticket, got %v", err)
-	// } else {
-	// 	fmt.Fprintf(res, "Ticket delete successfully")
-	// 	log.Println("Ticket deleted successfully, id:", ticketID)
-	// }
 }
 
 func deleteTicket(ticketID string) (string, error) {
-	conn, err := grpc.Dial(omFrontendEndpoint, grpc.WithInsecure())
+	fe, err := newClient(omFrontendEndpoint)
 	if err != nil {
-		log.Fatalf("Failed to connect to Open Match, got %v", err)
+		log.Fatalf("Falied create frontend service client, got %s", err.Error())
 	}
-	defer conn.Close()
 
-	// create client of open-match frontend
-	fe := pb.NewFrontendServiceClient(conn)
 	tReq := &pb.DeleteTicketRequest{
 		TicketId: ticketID,
 	}
@@ -168,6 +136,19 @@ func refreshTickets() {
 			deleteTicket(ticket)
 		}
 	}
+}
+
+func newClient(endPoint string) (pb.FrontendServiceClient, error) {
+	conn, err := grpc.Dial(endPoint, grpc.WithInsecure())
+	if err != nil {
+		// log.Fatalf("Failed to connect to Open Match, got %v", err)
+		conn.Close()
+		return nil, fmt.Errorf("Failed to connect to Open Match, got %v", err)
+	}
+	defer conn.Close()
+
+	fe := pb.NewFrontendServiceClient(conn)
+	return fe, nil
 }
 
 // StartMatchMakeRes is response of startmatchmake
