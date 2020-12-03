@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"nd-lobby/lobbyres"
+	"nd-lobby/tts"
 	"net/http"
 	"time"
 
@@ -31,16 +33,14 @@ func startMatchMake(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Fatalf("Failed to create ticket, got %v", err)
 	}
-	r := StartMatchMakeRes{
+	r := lobbyres.StartMatchMakeRes{
 		TicketID: resp.Id,
 	}
 
 	err = json.NewEncoder(res).Encode(r)
-	//code, err := json.Marshal(r)
 	if err != nil {
 		log.Fatalf("Failed encode json, got %s", err.Error())
 	}
-	// res.Write(code)
 	log.Println("Ticket created successfully, id:", resp.Id)
 }
 
@@ -72,7 +72,7 @@ func getMatchMakeProcess(res http.ResponseWriter, req *http.Request) {
 		} else {
 			conn = resp.Assignment.Connection
 		}
-		r := GetMatchMakeProcessRes{
+		r := lobbyres.GetMatchMakeProcessRes{
 			Status:     0,
 			Assignment: conn,
 			ErrMsg:     "Success",
@@ -81,7 +81,7 @@ func getMatchMakeProcess(res http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			log.Fatalf("Failed encode json, got %s", err.Error())
 		}
-
+		tts.UpdateTicketTimestamp(ticketID)
 	}
 }
 
@@ -96,7 +96,7 @@ func cancelMatchMake(res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(res, err.Error())
 	} else {
-		r := CancelMatchMakeRes{
+		r := lobbyres.CancelMatchMakeRes{
 			Status: 0,
 			ErrMsg: "Success",
 		}
@@ -126,13 +126,14 @@ func deleteTicket(ticketID string) (string, error) {
 		return "", fmt.Errorf("Falied to delete ticket")
 	} else {
 		log.Println("Ticket deleted successfully, id:", ticketID)
+		tts.DeleteTicketTimestamp(ticketID)
 		return "Ticket delete successfully", nil
 	}
 }
 
 func refreshTickets() {
 	for range time.Tick(time.Second * 1) {
-		for _, ticket := range refreshTicketTimestamps() {
+		for _, ticket := range tts.RefreshTicketTimestamps() {
 			deleteTicket(ticket)
 		}
 	}
@@ -149,23 +150,4 @@ func newClient(endPoint string) (pb.FrontendServiceClient, error) {
 
 	fe := pb.NewFrontendServiceClient(conn)
 	return fe, nil
-}
-
-// StartMatchMakeRes is response of startmatchmake
-type StartMatchMakeRes struct {
-	TicketID string `json:"ticketid,string,omitempty"`
-	ErrMsg   string `json:"errmsg,omitempty"`
-}
-
-// CancelMatchMakeRes is response of cancelmatchmake
-type CancelMatchMakeRes struct {
-	Status int32  `json:"status"`
-	ErrMsg string `json:"errmsg,omitempty"`
-}
-
-// GetMatchMakeProcessRes is response of getmatchmakeprocess
-type GetMatchMakeProcessRes struct {
-	Status     int32  `json:"status"`
-	Assignment string `json:"assignment,omitempty"`
-	ErrMsg     string `json:"errmsg,omitempty"`
 }

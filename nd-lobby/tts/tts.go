@@ -6,16 +6,18 @@ const idleTicketTolerance float64 = 10
 
 var ticketTimestamps map[string]time.Time
 
-func initTicketTimestampes() {
+// InitTicketTimestampes initailize ticket timestamps
+func InitTicketTimestampes() {
 	ticketTimestamps = make(map[string]time.Time)
 }
 
-func addTicketTimestamp(ticketID string) {
-
+// UpdateTicketTimestamp update timestamp of ticket
+func UpdateTicketTimestamp(ticketID string) {
 	ticketTimestamps[ticketID] = time.Now()
 }
 
-func refreshTicketTimestamps() []string {
+// RefreshTicketTimestamps refresh and check if ticket timestamp expired
+func RefreshTicketTimestamps() []string {
 	var deletedTickets []string
 	now := time.Now()
 	for ticket, timestamp := range ticketTimestamps {
@@ -27,6 +29,7 @@ func refreshTicketTimestamps() []string {
 	return deletedTickets
 }
 
-func deleteTicketTimestamp(ticketID string) {
+// DeleteTicketTimestamp delete ticketstamp
+func DeleteTicketTimestamp(ticketID string) {
 	delete(ticketTimestamps, ticketID)
 }
