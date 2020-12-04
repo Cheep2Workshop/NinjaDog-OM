@@ -6,9 +6,9 @@ import (
 	"open-match.dev/open-match/pkg/pb"
 )
 
-func generateTicket() *pb.Ticket {
-	fmt.Println("Generating ticket ...")
-	mode := "mode.dev"
+func generateTicket(mode string) *pb.Ticket {
+	fmt.Printf("Generating ticket (%s) ...", mode)
+	fmt.Println()
 	ticket := &pb.Ticket{
 		SearchFields: &pb.SearchFields{
 			Tags: []string{

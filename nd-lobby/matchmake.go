@@ -21,6 +21,13 @@ const (
 
 // start match making
 func startMatchMake(res http.ResponseWriter, req *http.Request) {
+	var mode string
+	mode = req.FormValue("mode")
+	// assign default mode
+	if mode == "" {
+		mode = "private"
+	}
+
 	fe, conn, err := newClient(omFrontendEndpoint)
 	if err != nil {
 		log.Fatalf("Falied create frontend service client, got %s", err.Error())
@@ -28,7 +35,7 @@ func startMatchMake(res http.ResponseWriter, req *http.Request) {
 	defer conn.Close()
 
 	tReq := &pb.CreateTicketRequest{
-		Ticket: generateTicket(),
+		Ticket: generateTicket(mode),
 	}
 
 	resp, err := fe.CreateTicket(context.Background(), tReq)

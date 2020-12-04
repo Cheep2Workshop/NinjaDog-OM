@@ -31,8 +31,13 @@ const (
 	matchName = "basic-matchfunction"
 
 	// Uncomment if following the tutorial
-	ticketsPerPoolPerMatch = 1
+	//ticketsPerPoolPerMatch = 1
 )
+
+var ticketsPerPoolPerMatchMode = map[string]int{
+	"pool_mode_private": 1,
+	"pool_mode_duel":    2,
+}
 
 // Run is this match function's implementation of the gRPC call defined in api/matchfunction.proto.
 func (s *MatchFunctionService) Run(req *pb.RunRequest, stream pb.MatchFunction_RunServer) error {
@@ -72,6 +77,9 @@ func makeMatches(p *pb.MatchProfile, poolTickets map[string][]*pb.Ticket) ([]*pb
 		insufficientTickets := false
 		matchTickets := []*pb.Ticket{}
 		for pool, tickets := range poolTickets {
+			// get the limit ticket count of mode
+			ticketsPerPoolPerMatch := ticketsPerPoolPerMatchMode[pool]
+
 			fmt.Printf("Pool[%s] tickets count:%d", pool, len(tickets))
 			fmt.Println()
 			if len(tickets) < ticketsPerPoolPerMatch {

@@ -18,6 +18,8 @@ const (
 	functionPort     int32 = 50502
 )
 
+var modes = [2]string{"private", "duel"}
+
 func main() {
 	// execute fecth procedure every 1 second
 	for range time.Tick(5 * time.Second) {
@@ -37,15 +39,20 @@ func run() error {
 		return err
 	}
 
-	matches, err := fetch(bc, agonesClient)
-	if len(matches) > 0 {
-		log.Printf("Generated %v matches", len(matches))
+	for _, mode := range modes {
+		matches, err := fetch(bc, agonesClient, mode)
+		if len(matches) > 0 {
+			log.Printf("Generated %v matches", len(matches))
+		}
+		if err != nil {
+			log.Fatalf("Failed to fetch match, got %s", err.Error())
+		}
 	}
 	return nil
 }
 
-func fetch(be pb.BackendServiceClient, agonesClient *versioned.Clientset) ([]*pb.Match, error) {
-	req := createOMFetchMatchesRequest()
+func fetch(be pb.BackendServiceClient, agonesClient *versioned.Clientset, mode string) ([]*pb.Match, error) {
+	req := createOMFetchMatchesRequest(mode)
 
 	stream, err := be.FetchMatches(context.Background(), req)
 	if err != nil {
@@ -82,7 +89,7 @@ func fetch(be pb.BackendServiceClient, agonesClient *versioned.Clientset) ([]*pb
 	return matches, nil
 }
 
-func createOMFetchMatchesRequest() *pb.FetchMatchesRequest {
+func createOMFetchMatchesRequest(mode string) *pb.FetchMatchesRequest {
 
 	return &pb.FetchMatchesRequest{
 		// om-function:50502 -> the internal hostname & port number of the MMF service in our Kubernetes cluster
@@ -91,13 +98,12 @@ func createOMFetchMatchesRequest() *pb.FetchMatchesRequest {
 			Port: functionPort,
 			Type: pb.FunctionConfig_GRPC,
 		},
-		Profile: generateMatchProfile(),
+		Profile: generateMatchProfile(mode),
 	}
 
 }
 
-func generateMatchProfile() *pb.MatchProfile {
-	mode := "mode.dev"
+func generateMatchProfile(mode string) *pb.MatchProfile {
 	mp := &pb.MatchProfile{
 		Name: "mode_based_profile",
 		Pools: []*pb.Pool{
